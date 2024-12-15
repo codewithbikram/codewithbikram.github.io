@@ -7,14 +7,19 @@
         <link rel="stylesheet" href="styles.css" />
     </head>
     <body>
+        <h1>Snake Game</h1>
+        <div id="scoreboard">
+            <p>Score: <span id="score">0</span></p>
+            <p>Highest Score: <span id="highScore">0</span></p>
+            <button id="resetScore">Reset Score</button>
+        </div>
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
         <div id="instructions">
-            <h1>Snake Game</h1>
             <p>Use the arrow keys to move the snake on a computer.</p>
             <p>Swipe to move the snake on a mobile device.</p>
             <p>Eat the red food to grow.</p>
             <p>Avoid running into the walls or yourself.</p>
         </div>
-        <canvas id="gameCanvas" width="400" height="400"></canvas>
         <script src="script.js"></script>
     </body>
 </html>

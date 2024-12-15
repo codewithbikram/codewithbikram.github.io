@@ -8,6 +8,9 @@ let snake = [{ x: 10, y: 10 }];
 let direction = { x: 0, y: 0 };
 let food = { x: 15, y: 15 };
 let score = 0;
+let highScore = localStorage.getItem('highScore') || 0;
+
+document.getElementById('highScore').innerText = highScore;
 
 let touchStartX = 0;
 let touchStartY = 0;
@@ -23,6 +26,12 @@ function update() {
 
     if (head.x === food.x && head.y === food.y) {
         score++;
+        document.getElementById('score').innerText = score;
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('highScore', highScore);
+            document.getElementById('highScore').innerText = highScore;
+        }
         food = {
             x: Math.floor(Math.random() * tileCount),
             y: Math.floor(Math.random() * tileCount),
@@ -45,16 +54,26 @@ function update() {
 }
 
 function draw() {
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = getCSSVariable('--background-color');
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = 'lime';
-    snake.forEach((segment) =>
-        ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize)
-    );
+    ctx.fillStyle = getCSSVariable('--snake-color');
+    ctx.strokeStyle = getCSSVariable('--snake-border-color');
+    snake.forEach((segment) => {
+        ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
+        ctx.strokeRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
+    });
 
-    ctx.fillStyle = 'red';
-    ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
+    ctx.fillStyle = getCSSVariable('--food-color');
+    ctx.beginPath();
+    ctx.arc(
+        food.x * gridSize + gridSize / 2,
+        food.y * gridSize + gridSize / 2,
+        gridSize / 2,
+        0,
+        2 * Math.PI
+    );
+    ctx.fill();
 }
 
 function snakeCollision(head) {
@@ -70,6 +89,7 @@ function resetGame() {
     snake = [{ x: 10, y: 10 }];
     direction = { x: 0, y: 0 };
     score = 0;
+    document.getElementById('score').innerText = score;
 }
 
 document.addEventListener('keydown', (event) => {
@@ -94,11 +114,9 @@ canvas.addEventListener('touchstart', (event) => {
     touchStartY = event.touches[0].clientY;
 });
 
-canvas.addEventListener('touchmove', (event) => {
-    if (event.touches.length > 1) return; // Ignore multi-touch
-
-    const touchEndX = event.tTouches[0].clientX;
-    const touchEndY = event.touches[0].clientY;
+canvas.addEventListener('touchend', (event) => {
+    const touchEndX = event.changedTouches[0].clientX;
+    const touchEndY = event.changedTouches[0].clientY;
 
     const diffX = touchEndX - touchStartX;
     const diffY = touchEndY - touchStartY;
@@ -116,9 +134,16 @@ canvas.addEventListener('touchmove', (event) => {
             direction = { x: 0, y: -1 }; // Swipe up
         }
     }
-
-    touchStartX = touchEndX;
-    touchStartY = touchEndY;
 });
+
+document.getElementById('resetScore').addEventListener('click', () => {
+    localStorage.setItem('highScore', 0);
+    highScore = 0;
+    document.getElementById('highScore').innerText = highScore;
+});
+
+function getCSSVariable(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
 
 gameLoop();
