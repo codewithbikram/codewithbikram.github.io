@@ -9,6 +9,9 @@ let direction = { x: 0, y: 0 };
 let food = { x: 15, y: 15 };
 let score = 0;
 
+let touchStartX = 0;
+let touchStartY = 0;
+
 function gameLoop() {
     update();
     draw();
@@ -22,7 +25,7 @@ function update() {
         score++;
         food = {
             x: Math.floor(Math.random() * tileCount),
-            y: Math.floor(Math.random() * tileCount)
+            y: Math.floor(Math.random() * tileCount),
         };
     } else {
         snake.pop();
@@ -30,7 +33,13 @@ function update() {
 
     snake.unshift(head);
 
-    if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount || snakeCollision(head)) {
+    if (
+        head.x < 0 ||
+        head.x >= tileCount ||
+        head.y < 0 ||
+        head.y >= tileCount ||
+        snakeCollision(head)
+    ) {
         resetGame();
     }
 }
@@ -40,7 +49,9 @@ function draw() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.fillStyle = 'lime';
-    snake.forEach(segment => ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize));
+    snake.forEach((segment) =>
+        ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize)
+    );
 
     ctx.fillStyle = 'red';
     ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
@@ -61,7 +72,7 @@ function resetGame() {
     score = 0;
 }
 
-document.addEventListener('keydown', event => {
+document.addEventListener('keydown', (event) => {
     switch (event.key) {
         case 'ArrowUp':
             if (direction.y === 0) direction = { x: 0, y: -1 };
@@ -76,6 +87,38 @@ document.addEventListener('keydown', event => {
             if (direction.x === 0) direction = { x: 1, y: 0 };
             break;
     }
+});
+
+canvas.addEventListener('touchstart', (event) => {
+    touchStartX = event.touches[0].clientX;
+    touchStartY = event.touches[0].clientY;
+});
+
+canvas.addEventListener('touchmove', (event) => {
+    if (event.touches.length > 1) return; // Ignore multi-touch
+
+    const touchEndX = event.tTouches[0].clientX;
+    const touchEndY = event.touches[0].clientY;
+
+    const diffX = touchEndX - touchStartX;
+    const diffY = touchEndY - touchStartY;
+
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX > 0 && direction.x === 0) {
+            direction = { x: 1, y: 0 }; // Swipe right
+        } else if (diffX < 0 && direction.x === 0) {
+            direction = { x: -1, y: 0 }; // Swipe left
+        }
+    } else {
+        if (diffY > 0 && direction.y === 0) {
+            direction = { x: 0, y: 1 }; // Swipe down
+        } else if (diffY < 0 && direction.y === 0) {
+            direction = { x: 0, y: -1 }; // Swipe up
+        }
+    }
+
+    touchStartX = touchEndX;
+    touchStartY = touchEndY;
 });
 
 gameLoop();
